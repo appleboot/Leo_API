@@ -8,10 +8,9 @@ def save_company(company):
     如果 JSON 裡原本已有其他公司，會先讀取舊資料，
     再新增或更新這次的公司資料。
     """
-
-    
+   
     # print("company =", company)
-    print("type =", type(company))
+    print("save_company的company資料型態是:", type(company))
     # 加入快取時間，記錄這筆公司資料最後更新的時間
     company["cached_at"] = datetime.now().isoformat(timespec="seconds")
 
@@ -35,7 +34,7 @@ def save_company(company):
     # 如果統編原本不存在 → 新增
     # 如果統編原本已存在 → 更新（覆蓋）該公司的舊資料
     companies[company["company_id"]] = company
-
+    print(companies[company["company_id"]])
     # 將更新完成的所有公司資料寫回 JSON
     with open("company_data.json", "w", encoding="utf-8") as file:
         print("[save_company] 準備寫入 JSON：")
@@ -76,21 +75,25 @@ def save_company(company):
 
 
 def load_company(company_id):
+    print(f"進入load_company{company_id}")
 
 
     try:
         with open("company_data.json", "r", encoding="utf-8") as file:
             companies = json.load(file)
+            print(f"我已經讀取company_data.json完成的資料是{companies} ")
 
     except FileNotFoundError:
+        print("讀取失敗")
 
         # 沒有 JSON，就先建立一個空的 JSON
         with open("company_data.json", "w", encoding="utf-8") as file:
             json.dump({}, file)
-
+            print("建立一個空json字典")
+        
         return None
 
     if company_id in companies:
         return companies[company_id]
-
+    print(f"離開load_company{company_id}")
     return None

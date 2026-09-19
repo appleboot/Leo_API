@@ -13,19 +13,26 @@ def fetch_company_data(company_id):
     輸出 response_1.json(),response_2.json()
     輸出:list
     """
+    print("===== 開始處理 公司API體驗的一、二 =====")
+    print(f"判斷{company_id}資料型態是str:",type(company_id))
+
     url = f"http://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {company_id}&$skip=0&$top=50"
     business_url = f"http://data.gcis.nat.gov.tw/od/data/api/236EE382-4942-41A9-BD03-CA0709025E7C?$format=json&$filter=Business_Accounting_NO eq {company_id}&$skip=0&$top=50"
 
     response_1 = requests.get(url)
     response_2 = requests.get(business_url)
-        # 先觀察 API 到底回了什麼
-    print("統一編號:", company_id)
+    # 先觀察 API 到底回了什麼
 
     print("API 1 狀態:", response_1.status_code)
-    # print("API 1 內容:", repr(response_1.text))
+    print("===== 公司基本資料 =====")
+    print("API 1 內容:", repr(response_1.text))
+    # print("response_1.json資料型態是:",type(response_1.json())) ##這行會抱錯
+
 
     print("API 2 狀態:", response_2.status_code)
-    # print("API 2 內容:", repr(response_2.text))
+    print("===== 營業項目 =====")
+    print("API 2 內容:", repr(response_2.text))
+    # print("response_2.json資料型態是:",type(response_2.json()))##這行會抱錯
 
     if response_1.status_code != 200:
         print("回傳有問題不等於200!!")
@@ -33,23 +40,23 @@ def fetch_company_data(company_id):
     if not response_1.text:
         print("API 1 回傳空資料")
         return None
-    # print("===== 公司基本資料 =====")
-    # print(response_1.json())
-
+    
     if response_2.status_code != 200:
         print("回傳有問題不等於200!!")
         return None
     if not response_2.text:
         print("API 2 回傳空資料")
         return None
-    # print("===== 營業項目 =====")
-    # print(response_2.json())
-    # print("基本資料型別：", type(response_1.json()))
-    # print("營業項目型別：", type(response_2.json()))
-    return [response_1.json(),response_2.json()]
+    if not response_1.text.strip() or not response_2.text.strip():
+        print("值為空值")
+        return None
+    #合併兩個
+    list_response_1and2 = [response_1.json(),response_2.json()]
+    print("===== 結束處理 公司API體驗的一、二 =====")
+    return list_response_1and2
 
 def fetch_business_data(company_id ,agency):
-    print("=進入商業 應用一、二 api程序=")
+    print("===進入商業 應用一、二 api程序===")
     """
     輸入:str
     1.讀取url 及business_url的api網子
@@ -105,16 +112,24 @@ def fetch_business_data(company_id ,agency):
     
     print("基本資料型別：", type(response_1.json()))
     print("營業項目型別：", type(response_2.json()))
-    print("===== 跑完商業應用一、二=====")
-    return [response_1.json(),response_2.json()]
+    business_data = [response_1.json(),response_2.json()]
+    print(type(business_data))
+    print("=== 跑完商業應用一、二===")
+    return business_data
 
 def build_company(company_data, business_data):
     """
+    輸入:list 兩個變數company_data,business_data
+    執行:
+    1.確認資料長度是不是 > 0 
+    2.找出相對應的資訊 轉換成字典
+
     輸出:dict
     """
-    # print("測試這裡build_company")
+    print("====開始執行build_company===")
 
     if len(company_data)>0:
+        print("\n")
         my_company = {
                 "company_name": company_data[0]["Company_Name"],
                 "company_id": company_data[0]["Business_Accounting_NO"],
@@ -123,8 +138,15 @@ def build_company(company_data, business_data):
                 "capital": company_data[0]["Capital_Stock_Amount"],
                 "paid_in_capital": company_data[0]["Paid_In_Capital_Amount"]
             }
-        print(type(my_company))
+        print("my_company資料類型是:",type(my_company))
         print("公司第一段的字典",my_company)
+        print("\n")
+        print("公司名稱:",company_data[0]["Company_Name"])
+        print("統一編號:",company_data[0]["Business_Accounting_NO"])
+        print("負責人姓名:",company_data[0]["Responsible_Name"])
+        print("公司地址:",company_data[0]["Company_Location"])
+        print("資本額:",company_data[0]["Capital_Stock_Amount"])
+        print("實收資本額:",company_data[0]["Paid_In_Capital_Amount"])
     if len(business_data)>0:
         # print(business_data)
         business_list = business_data[0]["Cmp_Business"]
@@ -142,8 +164,8 @@ def build_company(company_data, business_data):
     my_company["business_items"] = business_items
     # print(my_company.keys())
     # print(type(my_company))
-
-    return my_company
+    print("====結束執行build_company===")
+    # return my_company
 
 def build_business(company_data,business_data):
     """
@@ -157,6 +179,7 @@ def build_business(company_data,business_data):
     'business_items': [{'Seq_NO': '1', 'Item': 'F207030', 'Item_Desc': '清潔用品零售業'}]}
     輸出:dict
     """
+    print("===進入執行build_business===")
     if len(company_data) > 0 :
         print("商業名稱:",company_data[0]["Business_Name"])
         # print(type(company_data[0]["Business_Name"]))
@@ -171,9 +194,10 @@ def build_business(company_data,business_data):
             "company_location": company_data[0]["Business_Address"],
             "capital": company_data[0]["Business_Register_Funds"],
             }
+        print("company_data0裡面的資料有:",company_data[0])
         print("這裡字典有基本資料:",my_business)
     if len(business_data)> 0 :
-        # print(business_data[0]["Business_Item_Old"][0])
+        print("business_data0裡面的資料有:",business_data)
         business_list = business_data[0]["Business_Item_Old"]
         businss_items = []
         #====判斷資料型態=========
@@ -200,8 +224,11 @@ def build_business(company_data,business_data):
 
             businss_items.append(one_item)
         my_business["business_items"] = businss_items
+        print("----------------------------------")
+        print(f"my_business裡面資料有{my_business}")
         # print(type(my_business["business_items"]))
         # print(type(my_business))
+    print("===結束程序build_business===")
     return my_business
 
 def fetch_business_basic(company_id):
@@ -209,6 +236,7 @@ def fetch_business_basic(company_id):
     輸入str
     輸出list
     """
+    print("===進入fetch_business_basic執行程序===")
     #商業應用三url
     url = (
         "http://data.gcis.nat.gov.tw/od/data/api/"
@@ -228,7 +256,7 @@ def fetch_business_basic(company_id):
 
     if not response.text:
         return None
-
+    print("===離開fetch_business_basic執行程序===")
     return response.json()
 
 def agency_detail(agency):
@@ -239,35 +267,13 @@ def agency_detail(agency):
     """
     print("==開始轉換list 取出找到agency====")
     agency = agency[0]["Agency"]
+    print("機關單位代碼：", agency)
     print("==完成轉換list 取出找到agency====")
     return agency
 
 if __name__ == "__main__":
     ...
-    # fetch_business_data("15725713")
-    # company_data, business_data = fetch_company_data("84178803")
-    # build_company(company_data, business_data)
-    # company_data, business_data = fetch_business_data("91551501")
-    # build_business(company_data, business_data)
-    print("開始執行")
-    company_id = "91551501"
-    agency = fetch_business_basic(company_id)
-    print("這裡出來的型態",type(agency))
-    #測試
-    agency = agency_detail(agency)    
-    print(agency)
-    # agency = agency[0]["Agency"]
-    # print(agency)
-    # print("這裡出來的型態agency[0]Agency",type(agency))
-    # print("這裡出來的型態company_id",type(company_id))
-    # company_data,business_data = fetch_business_data(company_id,agency)
-    # data = build_business(company_data,business_data)
-    # print(type(data))
-    # print(data)
-
-    # print(type(agency))
-    # print("登記機關(Agency)",agency)
-    print("結束執行")
-    # print(result)
-    # print(type(result))
+    result = fetch_business_basic("91551501")
+    print(result)
+    print(type(result))
     
