@@ -165,7 +165,7 @@ def build_company(company_data, business_data):
     # print(my_company.keys())
     # print(type(my_company))
     print("====結束執行build_company===")
-    # return my_company
+    return my_company
 
 def build_business(company_data,business_data):
     """
@@ -273,7 +273,3 @@ def agency_detail(agency):
 
 if __name__ == "__main__":
     ...
-    result = fetch_business_basic("91551501")
-    print(result)
-    print(type(result))
-    
